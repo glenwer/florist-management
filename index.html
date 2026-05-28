@@ -218,10 +218,14 @@
 
             <!-- 버튼 -->
             <div class="pt-6 flex flex-col sm:flex-row gap-4 print-hidden">
-                <button type="button" onclick="window.print()" class="w-full sm:w-1/3 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-4 rounded-lg shadow transition">
+                <button type="button" onclick="window.print()" class="w-full sm:w-1/4 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-4 rounded-lg shadow transition">
                     🖨️ 프린트
                 </button>
-                <button type="submit" id="submitButton" class="w-full sm:w-2/3 bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition">
+                <button type="button" id="deleteButton" onclick="handleDeleteButton()"
+                    class="w-full sm:w-1/4 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg shadow transition">
+                    🗑️ 주문 삭제
+                </button>
+                <button type="submit" id="submitButton" class="w-full sm:w-2/4 bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition">
                     주문 등록 및 시트 전송
                 </button>
             </div>
@@ -229,7 +233,7 @@
     </div>
 
 <script>
-    const GOOGLE_SHEET_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyC-MbgFtgX0rfoHPDO2KoiI19pzWoYixT3SIDgXq33-JE6uF6j9xJ8n9ZbJt_T_Y69/exec';
+    const GOOGLE_SHEET_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx_UktETEoM9y3Sev8QmKMN7ZlV5Dh-ZSPTpvxHU7d39p4XPQXg5I6b7G8pNUEhogJG/exec';
 
     // ── 요소 ──────────────────────────────────────────
     const form                    = document.getElementById('orderForm');
@@ -482,7 +486,50 @@
         }
     }
 
-    // ── 폼 submit ─────────────────────────────────────
+    // ── 삭제 버튼 핸들러 ─────────────────────────────
+    async function handleDeleteButton() {
+        if (!recordIdentifierHiddenInput.value) {
+            showMessage('⚠️ 삭제할 기록이 없습니다. 먼저 "Find & Update"로 검색하세요.', 'bg-yellow-100 text-yellow-800');
+            return;
+        }
+
+        const name = customerNameInput.value.trim() || '이 주문';
+        const confirmed = confirm(`"${name}" 주문을 정말 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`);
+        if (!confirmed) return;
+
+        const deleteButton = document.getElementById('deleteButton');
+        deleteButton.disabled = true;
+        deleteButton.textContent = '삭제 중...';
+
+        const data = {
+            action: 'delete',
+            searchKey: recordIdentifierHiddenInput.value
+        };
+
+        showMessage('🗑️ 삭제 중...', 'bg-orange-100 text-orange-800');
+
+        try {
+            await fetch(GOOGLE_SHEET_APPS_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            await new Promise(r => setTimeout(r, 1000));
+
+            showMessage('✅ 주문이 삭제되었습니다.', 'bg-green-100 text-green-800');
+            clearAllFormFields();
+
+        } catch (err) {
+            console.error(err);
+            showMessage('❌ 삭제 실패. 네트워크 또는 Apps Script 오류.', 'bg-red-100 text-red-800');
+        } finally {
+            deleteButton.disabled = false;
+            deleteButton.textContent = '🗑️ 주문 삭제';
+        }
+    }
+
+
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         const submitButton = form.querySelector('button[type="submit"]');
