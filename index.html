@@ -107,6 +107,14 @@
 
             /* 각 행: 레이블 + 값 */
             .print-row          { margin-bottom: 2px !important; }
+
+            /* 메세지 카드 내용: 자동 높이 (내용이 길어도 잘리지 않음) */
+            #p_messageCard {
+                min-height: 18px !important;
+                height: auto !important;
+                white-space: pre-wrap !important;
+                word-break: break-word !important;
+            }
             /* 오른쪽 컬럼: 주문일자에 맞춰 배달일자 등 위에 공백 추가 */
             .print-row-gap      { margin-top: 18px !important; margin-bottom: 2px !important; }
 
