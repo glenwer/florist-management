@@ -233,7 +233,7 @@
     </div>
 
 <script>
-    const GOOGLE_SHEET_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx_UktETEoM9y3Sev8QmKMN7ZlV5Dh-ZSPTpvxHU7d39p4XPQXg5I6b7G8pNUEhogJG/exec';
+    const GOOGLE_SHEET_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyYrqE46jSmVfyngHV5C5auU2BvBA0jLo8aE1XXZZjKRVSHBX3vlo1LEmhdkO_qY-mT/exec';
 
     // ── 요소 ──────────────────────────────────────────
     const form                    = document.getElementById('orderForm');
@@ -486,7 +486,7 @@
         }
     }
 
-    // ── 삭제 버튼 핸들러 ─────────────────────────────
+    // ── 삭제 버튼 핸들러 (GET 방식 — 응답 확인 가능) ──
     async function handleDeleteButton() {
         if (!recordIdentifierHiddenInput.value) {
             showMessage('⚠️ 삭제할 기록이 없습니다. 먼저 "Find & Update"로 검색하세요.', 'bg-yellow-100 text-yellow-800');
@@ -500,26 +500,21 @@
         const deleteButton = document.getElementById('deleteButton');
         deleteButton.disabled = true;
         deleteButton.textContent = '삭제 중...';
-
-        const data = {
-            action: 'delete',
-            searchKey: recordIdentifierHiddenInput.value
-        };
-
         showMessage('🗑️ 삭제 중...', 'bg-orange-100 text-orange-800');
 
         try {
-            await fetch(GOOGLE_SHEET_APPS_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            await new Promise(r => setTimeout(r, 1000));
+            // ✅ GET 방식으로 변경 — 응답을 직접 확인 가능
+            const url = `${GOOGLE_SHEET_APPS_SCRIPT_URL}?action=delete&searchKey=${encodeURIComponent(recordIdentifierHiddenInput.value)}`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const result = await response.json();
 
-            showMessage('✅ 주문이 삭제되었습니다.', 'bg-green-100 text-green-800');
-            clearAllFormFields();
-
+            if (result.result === 'success') {
+                showMessage('✅ 주문이 삭제되었습니다.', 'bg-green-100 text-green-800');
+                clearAllFormFields();
+            } else {
+                showMessage(`❌ 삭제 실패: ${result.message}`, 'bg-red-100 text-red-800');
+            }
         } catch (err) {
             console.error(err);
             showMessage('❌ 삭제 실패. 네트워크 또는 Apps Script 오류.', 'bg-red-100 text-red-800');
