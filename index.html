@@ -80,6 +80,11 @@
             #amountGrid { display: flex !important; flex-wrap: wrap; justify-content: space-between; gap: 5px; }
             #amountGrid > div { width: 24%; margin-bottom: 0; }
             #amountGrid .input-field { text-align: left !important; }
+
+            /* 프린트 시 손님 전화번호↔주소 위치 교체 */
+            #customerInfoSection .grid:first-child { display: flex !important; flex-wrap: wrap; }
+            #customerPhoneDiv  { order: 10 !important; width: 100% !important; margin-top: 4px; }
+            #customerAddressDiv { order: 2 !important; }
         }
     </style>
 </head>
@@ -139,13 +144,13 @@
                             <label for="orderDate" class="block text-sm font-medium text-gray-700 mb-1">주문 일자 *</label>
                             <input type="date" id="orderDate" name="주문 일자" required class="input-field">
                         </div>
-                        <div>
+                        <div id="customerPhoneDiv">
                             <label for="customerPhone" class="block text-sm font-medium text-gray-700 mb-1">손님 전화번호 *</label>
                             <input type="tel" id="customerPhone" name="손님 전화번호" required class="input-field">
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
+                        <div id="customerAddressDiv">
                             <label for="customerAddress" class="block text-sm font-medium text-gray-700 mb-1">손님 주소</label>
                             <input type="text" id="customerAddress" name="손님 주소" class="input-field">
                         </div>
