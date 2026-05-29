@@ -52,42 +52,18 @@
             to   { transform: translateY(0);    opacity: 1; }
         }
         .modal-item {
-            padding: 12px 14px;
-            border-radius: 10px;
+            padding: 10px 14px;
+            border-radius: 8px;
             cursor: pointer;
             border: 1px solid #f3f4f6;
-            transition: all 0.15s;
+            transition: background 0.15s;
         }
         .modal-item:hover {
             background: #fef2f2;
             border-color: #fecaca;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
-        .modal-item .name {
-            font-weight: 700;
-            font-size: 1rem;
-            color: #111827;
-            margin-bottom: 6px;
-        }
-        .modal-item .badges {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 0.72rem;
-            font-weight: 600;
-            padding: 3px 8px;
-            border-radius: 20px;
-        }
-        .badge-order    { background: #dbeafe; color: #1d4ed8; }
-        .badge-phone    { background: #dcfce7; color: #15803d; }
-        .badge-delivery { background: #fef9c3; color: #a16207; }
-        .badge-amount   { background: #fce7f3; color: #be185d; }
+        .modal-item .name   { font-weight: 700; color: #1f2937; }
+        .modal-item .detail { font-size: 0.75rem; color: #6b7280; margin-top: 2px; }
 
         /* ── 프린트 ── */
         @media print {
@@ -352,12 +328,7 @@
             item.className = 'modal-item';
             item.innerHTML = `
                 <div class="name">${rec['손님 이름'] || ''}</div>
-                <div class="badges">
-                    <span class="badge badge-order">📅 주문일 ${rec['주문 일자'] || '-'}</span>
-                    <span class="badge badge-phone">📞 ${rec['손님 전화번호'] || '-'}</span>
-                    <span class="badge badge-delivery">🚚 배달 ${rec['배달 일자'] || '-'}</span>
-                    <span class="badge badge-amount">💰 ${rec['총액'] ? '$' + rec['총액'] : '-'}</span>
-                </div>`;
+                <div class="detail">주문일: ${rec['주문 일자'] || ''} &nbsp;|&nbsp; 전화: ${rec['손님 전화번호'] || ''} &nbsp;|&nbsp; 배달: ${rec['배달 일자'] || ''}</div>`;
             item.addEventListener('click', () => {
                 populateForm(rec);
                 const key = `${rec['손님 이름']}|||${rec['주문 일자']}`;
