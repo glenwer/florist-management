@@ -67,72 +67,56 @@
 
         /* ── 프린트 ── */
         @media print {
+            /* 기본 리셋 */
             .print-hidden, .message-box { display: none !important; }
+            body       { background: white !important; padding: 0 !important; margin: 0 !important; font-size: 10pt; }
+            .max-w-4xl { box-shadow: none !important; max-width: none !important; padding: 6px 10px !important; margin: 0 !important; }
 
-            body        { background: white !important; padding: 0 !important; margin: 0 !important; font-size: 10pt; }
-            .max-w-4xl  { box-shadow: none !important; max-width: none !important; padding: 4px 6px !important; margin: 0 !important; }
-
+            /* 입력 필드 → 밑줄 텍스트 스타일 */
             .input-field {
-                border: none !important; padding: 0 0 2px 0 !important;
+                border: none !important; padding: 1px 0 2px 0 !important;
                 background: transparent !important; box-shadow: none !important;
-                border-bottom: 1px dashed #aaa !important;
+                border-bottom: 1px dashed #999 !important;
                 height: auto !important; min-height: 18px !important;
+                display: block !important; width: 100% !important;
             }
 
-            .main-header { border-bottom: 2px solid #fecaca !important; padding-bottom: 4px !important; margin-bottom: 8px !important; }
-            .main-header h1 { font-size: 18pt !important; font-weight: bolder !important; color: #000 !important; }
+            /* 헤더 */
+            .main-header { border-bottom: 2px solid #fecaca !important; padding-bottom: 4px !important; margin-bottom: 10px !important; }
+            .main-header h1 { font-size: 18pt !important; font-weight: 900 !important; color: #000 !important; }
 
-            label { font-size: 10pt !important; font-weight: bold !important; color: #4b5563 !important; margin-top: 4px !important; display: block !important; }
+            /* 레이블 */
+            label { font-size: 10pt !important; font-weight: bold !important; color: #374151 !important; margin-top: 0 !important; margin-bottom: 1px !important; display: block !important; }
 
-            /* 모든 내부 그리드를 block으로 리셋 */
+            /* 화면 전용 섹션 완전히 숨기기 */
+            #mainInfoContainer { display: none !important; }
+
+            /* 그리드 리셋 */
             .grid { display: block !important; }
-            .grid > div { margin-bottom: 4px !important; }
 
-            /* ── 메인 2컬럼 레이아웃 ── */
-            #mainInfoContainer {
+            /* ── 프린트 전용 2컬럼 컨테이너 ── */
+            #printInfoContainer {
                 display: grid !important;
                 grid-template-columns: 1fr 1fr !important;
-                gap: 24px !important;
-                margin-bottom: 8px !important;
+                gap: 32px !important;
+                margin-bottom: 12px !important;
                 page-break-inside: avoid !important;
                 align-items: start !important;
             }
+            .print-col { display: block !important; }
 
-            /* 왼쪽(손님) 섹션: 5행 그리드로 고정 */
-            #customerInfoSection {
-                display: grid !important;
-                grid-template-rows: auto auto auto auto auto !important;
-                gap: 0 !important;
-                margin: 0 !important; padding: 0 !important;
-            }
-            /* 왼쪽 내부 그리드들도 block으로 */
-            #customerInfoSection .grid { display: block !important; }
+            /* 각 행: 레이블 + 값 */
+            .print-row          { margin-bottom: 2px !important; }
+            /* 오른쪽 컬럼: 주문일자에 맞춰 배달일자 등 위에 공백 추가 */
+            .print-row-gap      { margin-top: 18px !important; margin-bottom: 2px !important; }
 
-            /* 손님 전화번호↔주소 순서 교체 */
-            #customerInfoSection .grid:first-child {
-                display: flex !important; flex-wrap: wrap;
-            }
-            #customerAddressDiv { order: 2  !important; width: 100% !important; }
-            #creditCardDiv      { order: 9  !important; width: 100% !important; }
-            #customerPhoneDiv   { order: 10 !important; width: 100% !important; }
-
-            /* 오른쪽(받는사람) 섹션: 5행 그리드로 고정 */
-            #recipientInfoSection {
-                display: grid !important;
-                grid-template-rows: auto auto auto auto auto !important;
-                gap: 0 !important;
-                margin: 0 !important; padding: 0 !important;
-            }
-            #recipientInfoSection .grid { display: block !important; }
-            #recipientInfoSection .pt-2 { padding-top: 4px !important; }
-
-            /* ── 금액 섹션 ── */
+            /* ── 상품 & 금액 ── */
             #amountGrid {
                 display: flex !important; flex-wrap: wrap;
                 justify-content: space-between; gap: 4px;
             }
-            #amountGrid > div         { width: 24% !important; margin-bottom: 0 !important; }
-            #amountGrid .input-field  { text-align: left !important; }
+            #amountGrid > div        { width: 24% !important; margin-bottom: 0 !important; }
+            #amountGrid .input-field { text-align: left !important; }
         }
     </style>
 </head>
@@ -236,21 +220,53 @@
                 </div>
             </div>
 
-            <!-- ✅ 프린트 전용 2컬럼 (화면에서는 숨김, JS로 값 복사) -->
+            <!-- ✅ 프린트 전용 2컬럼 (화면에서는 숨김) -->
             <div id="printInfoContainer" style="display:none;">
+                <!-- 왼쪽: 손님 정보 -->
                 <div class="print-col">
-                    <div class="print-row"><label>손님 이름</label><div class="input-field" id="p_customerName"></div></div>
-                    <div class="print-row"><label>주문 일자</label><div class="input-field" id="p_orderDate"></div></div>
-                    <div class="print-row"><label>손님 주소</label><div class="input-field" id="p_customerAddress"></div></div>
-                    <div class="print-row"><label>손님 전화번호</label><div class="input-field" id="p_customerPhone"></div></div>
-                    <div class="print-row"><label>크레딧 카드 번호</label><div class="input-field" id="p_creditCard"></div></div>
+                    <div class="print-row">
+                        <label>손님 이름</label>
+                        <div class="input-field" id="p_customerName"></div>
+                    </div>
+                    <div class="print-row-gap">
+                        <label>주문 일자</label>
+                        <div class="input-field" id="p_orderDate"></div>
+                    </div>
+                    <div class="print-row-gap">
+                        <label>손님 주소</label>
+                        <div class="input-field" id="p_customerAddress"></div>
+                    </div>
+                    <div class="print-row-gap">
+                        <label>손님 전화번호</label>
+                        <div class="input-field" id="p_customerPhone"></div>
+                    </div>
+                    <div class="print-row-gap">
+                        <label>크레딧 카드 번호</label>
+                        <div class="input-field" id="p_creditCard"></div>
+                    </div>
                 </div>
+                <!-- 오른쪽: 받는 사람 정보 -->
                 <div class="print-col">
-                    <div class="print-row"><label>받는 사람 이름</label><div class="input-field" id="p_recipientName"></div></div>
-                    <div class="print-row"><label>배달 일자</label><div class="input-field" id="p_deliveryDate"></div></div>
-                    <div class="print-row"><label>받는 사람 주소</label><div class="input-field" id="p_recipientAddress"></div></div>
-                    <div class="print-row"><label>받는 사람 전화번호</label><div class="input-field" id="p_recipientPhone"></div></div>
-                    <div class="print-row"><label>메세지 카드 내용</label><div class="input-field" id="p_messageCard"></div></div>
+                    <div class="print-row">
+                        <label>받는 사람 이름</label>
+                        <div class="input-field" id="p_recipientName"></div>
+                    </div>
+                    <div class="print-row-gap">
+                        <label>배달 일자</label>
+                        <div class="input-field" id="p_deliveryDate"></div>
+                    </div>
+                    <div class="print-row-gap">
+                        <label>받는 사람 주소</label>
+                        <div class="input-field" id="p_recipientAddress"></div>
+                    </div>
+                    <div class="print-row-gap">
+                        <label>받는 사람 전화번호</label>
+                        <div class="input-field" id="p_recipientPhone"></div>
+                    </div>
+                    <div class="print-row-gap">
+                        <label>메세지 카드 내용</label>
+                        <div class="input-field" id="p_messageCard"></div>
+                    </div>
                 </div>
             </div>
 
