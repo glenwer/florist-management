@@ -69,6 +69,7 @@
         @media print {
             /* 기본 리셋 */
             .print-hidden, .message-box { display: none !important; }
+            #printTitle { display: block !important; }
             body       { background: white !important; padding: 0 !important; margin: 0 !important; font-size: 10pt; }
             .max-w-4xl { box-shadow: none !important; max-width: none !important; padding: 6px 10px !important; margin: 0 !important; }
 
@@ -146,7 +147,8 @@
 
         <!-- 타이틀 -->
         <div class="flex justify-between items-center mb-6 main-header">
-            <h1 class="text-xl sm:text-2xl font-extrabold text-red-600 pb-2">Glenview Florist</h1>
+            <h1 class="text-xl sm:text-2xl font-extrabold text-red-600 pb-2 cursor-pointer hover:opacity-70 transition print-hidden" onclick="handleNewButton()" title="클릭하면 초기화">Glenview Florist</h1>
+            <h1 class="text-xl sm:text-2xl font-extrabold text-red-600 pb-2" style="display:none;" id="printTitle">Glenview Florist</h1>
             <div class="flex gap-2 print-hidden">
                 <button type="button" id="newButton" onclick="handleNewButton()"
                     class="text-sm px-3 py-1 bg-red-600 text-white rounded-lg shadow transition hover:bg-red-700 flex items-center gap-1">
