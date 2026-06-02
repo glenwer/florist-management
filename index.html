@@ -207,7 +207,13 @@
                 <div id="recipientInfoSection" class="mb-6 pt-2">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label for="recipientName" class="block text-sm font-medium text-gray-700 mb-1">받는 사람 이름 *</label>
+                            <div class="flex items-center gap-2 mb-1">
+                                <label for="recipientName" class="text-sm font-medium text-gray-700">받는 사람 이름 *</label>
+                                <label class="flex items-center gap-1 cursor-pointer select-none print-hidden">
+                                    <input type="checkbox" id="sameAsCustomer" class="w-3.5 h-3.5 accent-red-500" onchange="fillSameAsCustomer(this.checked)">
+                                    <span class="text-xs text-gray-400">손님과 동일</span>
+                                </label>
+                            </div>
                             <input type="text" id="recipientName" name="받는 사람 이름" required class="input-field">
                         </div>
                         <div>
@@ -411,6 +417,7 @@
         calculateTotal();
         recordIdentifierHiddenInput.value = '';
         document.getElementById('originalOrderDateHidden').value = '';
+        const cb = document.getElementById('sameAsCustomer'); if (cb) cb.checked = false;
     }
 
     function handleNewButton() {
@@ -676,6 +683,28 @@
         document.getElementById('p_recipientAddress').textContent = document.getElementById('recipientAddress').value;
         document.getElementById('p_recipientPhone').textContent   = document.getElementById('recipientPhone').value;
         document.getElementById('p_messageCard').textContent      = document.getElementById('messageCard').value;
+    });
+
+    // ── 손님과 동일 체크박스 ─────────────────────────────
+    function fillSameAsCustomer(checked) {
+        if (checked) {
+            document.getElementById('recipientName').value    = customerNameInput.value;
+            document.getElementById('recipientPhone').value   = document.getElementById('customerPhone').value;
+            document.getElementById('recipientAddress').value = document.getElementById('customerAddress').value;
+        } else {
+            document.getElementById('recipientName').value    = '';
+            document.getElementById('recipientPhone').value   = '';
+            document.getElementById('recipientAddress').value = '';
+        }
+    }
+
+    // 손님 이름/전화/주소 변경 시 체크된 상태면 자동 동기화
+    ['customerName', 'customerPhone', 'customerAddress'].forEach(id => {
+        document.getElementById(id).addEventListener('input', () => {
+            if (document.getElementById('sameAsCustomer').checked) {
+                fillSameAsCustomer(true);
+            }
+        });
     });
 
     // ── 초기 로드 ─────────────────────────────────────
