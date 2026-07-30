@@ -459,6 +459,7 @@
     searchModal.addEventListener('click', e => { if (e.target === searchModal) closeModal(); });
 
     // ── 검색 (부분 이름 포함, 다중 결과 지원) ──────────
+    // ✅ 검색은 이름만 넘어가는 GET이라 민감 정보 노출 문제 없음 — 그대로 유지
     async function searchPreviousOrder() {
         const customerName = customerNameInput.value.trim();
         if (customerName.length < 1) {
@@ -478,28 +479,21 @@
             const result = await response.json();
 
             if (result.result === 'success') {
-                // Apps Script가 단일 객체를 반환하는 경우 — 배열로 감싸기
+                // 서버가 이미 필터링해서 보내주므로 그대로 사용
                 const records = Array.isArray(result.data) ? result.data : [result.data];
 
-                // 부분 이름 일치 필터 (first/last name 지원)
-                const query = customerName.toLowerCase();
-                const matched = records.filter(r => {
-                    const full = (r['손님 이름'] || '').toLowerCase();
-                    return full.split(/\s+/).some(part => part.startsWith(query)) || full.includes(query);
-                });
-
-                if (matched.length === 0) {
+                if (records.length === 0) {
                     showMessage(`ℹ️ '${customerName}'와 일치하는 기록이 없습니다.`, 'bg-yellow-100 text-yellow-800');
                     recordIdentifierHiddenInput.value = '';
-                } else if (matched.length === 1) {
+                } else if (records.length === 1) {
                     // 단일 결과 → 바로 채우기
-                    populateForm(matched[0]);
-                    recordIdentifierHiddenInput.value = `${matched[0]['손님 이름']}|||${matched[0]['주문 일자']}`;
-                    document.getElementById('originalOrderDateHidden').value = matched[0]['주문 일자'];
-                    showMessage(`✅ '${matched[0]['손님 이름']}'님 기록을 불러왔습니다.`, 'bg-green-100 text-green-800');
+                    populateForm(records[0]);
+                    recordIdentifierHiddenInput.value = `${records[0]['손님 이름']}|||${records[0]['주문 일자']}`;
+                    document.getElementById('originalOrderDateHidden').value = records[0]['주문 일자'];
+                    showMessage(`✅ '${records[0]['손님 이름']}'님 기록을 불러왔습니다.`, 'bg-green-100 text-green-800');
                 } else {
                     // 여러 결과 → 모달
-                    openModal(matched);
+                    openModal(records);
                 }
 
             } else if (result.result === 'not found') {
@@ -542,7 +536,8 @@
         calculateTotal();
     }
 
-    // ── 데이터 전송 (GET 방식 — 응답 확인 가능) ────────
+    // ── 데이터 전송 (POST + text/plain — CORS preflight 회피, 응답 확인 가능) ──
+    // ✅ 카드번호 등 민감 정보가 더 이상 URL 쿼리스트링에 노출되지 않음
     async function sendDataToAppsScript(action, submitButton) {
         const isUpdate = action === 'update';
         submitButton.disabled = true;
@@ -570,9 +565,14 @@
         showMessage(isUpdate ? '수정 중...' : '등록 중... 잠시만요.', 'bg-blue-100 text-blue-800');
 
         try {
-            // ✅ GET 방식으로 전송 — 응답을 직접 확인
-            const url = `${GOOGLE_SHEET_APPS_SCRIPT_URL}?payload=${encodeURIComponent(JSON.stringify(data))}`;
-            const response = await fetch(url);
+            // ✅ Content-Type: text/plain → 브라우저가 preflight(OPTIONS) 요청을 보내지 않음
+            //    (Apps Script는 OPTIONS 요청을 제대로 처리하지 못해 preflight가 있으면 실패함)
+            //    본문 내용 자체는 그대로 JSON 문자열이며, 서버(doPost)에서 JSON.parse로 읽음
+            const response = await fetch(GOOGLE_SHEET_APPS_SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(data)
+            });
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const result = await response.json();
 
@@ -581,7 +581,9 @@
                     isUpdate ? '✅ 시트에서 수정되었습니다.' : '✅ 시트에 등록되었습니다.',
                     'bg-green-100 text-green-800'
                 );
-                if (!isUpdate) recordIdentifierHiddenInput.value = '';
+                // ✅ 등록/수정 성공 후 폼을 초기화하여 다음 손님 정보와 섞이거나
+                //    같은 내용을 실수로 중복 등록하는 것을 방지
+                clearAllFormFields();
             } else {
                 showMessage(`❌ 실패: ${result.message}`, 'bg-red-100 text-red-800');
             }
@@ -595,7 +597,7 @@
         }
     }
 
-    // ── 삭제 버튼 핸들러 (GET 방식 — 응답 확인 가능) ──
+    // ── 삭제 버튼 핸들러 (POST + text/plain — 응답 확인 가능) ──
     async function handleDeleteButton() {
         if (!recordIdentifierHiddenInput.value) {
             showMessage('⚠️ 삭제할 기록이 없습니다. 먼저 "Find & Update"로 검색하세요.', 'bg-yellow-100 text-yellow-800');
@@ -612,9 +614,11 @@
         showMessage('🗑️ 삭제 중...', 'bg-orange-100 text-orange-800');
 
         try {
-            // ✅ GET 방식으로 변경 — 응답을 직접 확인 가능
-            const url = `${GOOGLE_SHEET_APPS_SCRIPT_URL}?action=delete&searchKey=${encodeURIComponent(recordIdentifierHiddenInput.value)}`;
-            const response = await fetch(url);
+            const response = await fetch(GOOGLE_SHEET_APPS_SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: 'delete', searchKey: recordIdentifierHiddenInput.value })
+            });
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const result = await response.json();
 
