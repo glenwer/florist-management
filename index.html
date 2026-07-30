@@ -197,7 +197,11 @@
                             <input type="text" id="customerAddress" name="손님 주소" class="input-field">
                         </div>
                         <div id="creditCardDiv">
-                            <label for="creditCardNumber" class="block text-sm font-medium text-gray-700 mb-1">크레딧 카드 번호</label>
+                            <div class="flex items-center justify-between mb-1">
+                                <label for="creditCardNumber" class="block text-sm font-medium text-gray-700">크레딧 카드 번호</label>
+                                <button type="button" id="revealCardBtn" onclick="revealCreditCard()"
+                                    class="hidden text-xs text-blue-500 hover:text-blue-700 font-medium print-hidden">🔓 전체 보기</button>
+                            </div>
                             <input type="text" id="creditCardNumber" name="크레딧 카드 번호" class="input-field" maxlength="30">
                         </div>
                     </div>
@@ -418,6 +422,10 @@
         recordIdentifierHiddenInput.value = '';
         document.getElementById('originalOrderDateHidden').value = '';
         const cb = document.getElementById('sameAsCustomer'); if (cb) cb.checked = false;
+
+        // ✅ 카드번호 필드 잠금 해제 + 보기 버튼 숨기기 (New 주문은 마스킹 대상이 아님)
+        document.getElementById('creditCardNumber').readOnly = false;
+        document.getElementById('revealCardBtn').classList.add('hidden');
     }
 
     function handleNewButton() {
@@ -534,6 +542,49 @@
         if (data['총액'])       totalAmountHiddenInput.value = data['총액'];
         if (data['텍스 비율'])  taxRateConfigInput.value     = data['텍스 비율'];
         calculateTotal();
+
+        // ✅ 검색으로 불러온 카드번호는 마스킹된 상태이므로 필드를 잠그고
+        //    "전체 보기" 버튼을 노출 (실수로 마스킹 값이 실제 값을 덮어쓰지 않도록 보호)
+        if (data['크레딧 카드 번호'] !== undefined) {
+            document.getElementById('creditCardNumber').readOnly = true;
+            document.getElementById('revealCardBtn').classList.remove('hidden');
+        }
+    }
+
+    // ── 카드번호 전체 보기 (비밀번호 확인 후 서버에서 실제 값 조회) ──
+    async function revealCreditCard() {
+        if (!recordIdentifierHiddenInput.value) {
+            showMessage('⚠️ 먼저 손님을 검색하세요.', 'bg-yellow-100 text-yellow-800');
+            return;
+        }
+        const password = prompt('카드번호 전체를 보려면 비밀번호를 입력하세요:');
+        if (password === null) return; // 취소함
+
+        try {
+            const response = await fetch(GOOGLE_SHEET_APPS_SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({
+                    action: 'revealCard',
+                    searchKey: recordIdentifierHiddenInput.value,
+                    password: password
+                })
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const result = await response.json();
+
+            if (result.result === 'success') {
+                const cardInput = document.getElementById('creditCardNumber');
+                cardInput.value = result.cardNumber;
+                cardInput.readOnly = false; // 필요하면 바로 수정도 가능하게 잠금 해제
+                showMessage('🔓 카드번호 전체가 표시되었습니다.', 'bg-green-100 text-green-800');
+            } else {
+                showMessage(`❌ ${result.message || '비밀번호가 올바르지 않습니다.'}`, 'bg-red-100 text-red-800');
+            }
+        } catch (err) {
+            console.error(err);
+            showMessage('❌ 요청 실패. 네트워크 오류.', 'bg-red-100 text-red-800');
+        }
     }
 
     // ── 데이터 전송 (POST + text/plain — CORS preflight 회피, 응답 확인 가능) ──
