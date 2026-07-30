@@ -25,6 +25,16 @@
             outline: none;
         }
 
+        /* ✅ 금액 입력 필드의 위/아래 스피너 화살표 제거 (상품 금액, 배달료, 텍스 비율) */
+        .amount-input::-webkit-outer-spin-button,
+        .amount-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .amount-input {
+            -moz-appearance: textfield;
+        }
+
         /* ── 모달 ── */
         #searchModal {
             display: none;
@@ -411,6 +421,12 @@
         return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
     }
 
+    // ✅ 2026년 8월 1일부터 텍스 비율 11%로 자동 전환 (그 이전엔 기존 10.75% 유지)
+    function getDefaultTaxRate() {
+        const cutoverDate = new Date('2026-08-01T00:00:00');
+        return new Date() >= cutoverDate ? 11 : 10.75;
+    }
+
     // ── 폼 초기화 (New 버튼 전용) ─────────────────────
     function clearAllFormFields() {
         form.reset();
@@ -418,6 +434,7 @@
         deliveryDateInput.value = todayStr();
         productAmountInput.value = '0.00';
         deliveryFeeInput.value   = '0';
+        taxRateConfigInput.value = getDefaultTaxRate(); // ✅ 2026-08-01부터 11% 자동 적용
         calculateTotal();
         recordIdentifierHiddenInput.value = '';
         document.getElementById('originalOrderDateHidden').value = '';
@@ -726,6 +743,11 @@
     // ── 금액 계산 이벤트 ──────────────────────────────
     document.querySelectorAll('.amount-input').forEach(input => input.addEventListener('input', calculateTotal));
 
+    // ✅ 금액 필드 포커스 시 기존 값 전체 선택 → 바로 타이핑해서 덮어쓸 수 있게
+    document.querySelectorAll('.amount-input').forEach(input => {
+        input.addEventListener('focus', function() { this.select(); });
+    });
+
     // ── 프린트 전 값 동기화 ──────────────────────────────
     window.addEventListener('beforeprint', function() {
         document.getElementById('p_customerName').textContent     = document.getElementById('customerName').value;
@@ -768,6 +790,7 @@
         deliveryDateInput.value = todayStr();
         productAmountInput.value = '0.00';
         deliveryFeeInput.value   = '0';
+        taxRateConfigInput.value = getDefaultTaxRate(); // ✅ 2026-08-01부터 11% 자동 적용
         calculateTotal();
     };
 </script>
