@@ -80,6 +80,12 @@
         .modal-item .name   { font-weight: 700; color: #1f2937; }
         .modal-item .detail { font-size: 0.75rem; color: #6b7280; margin-top: 2px; }
 
+        /* ✅ 메인 타이틀 "Glenview Florist" 입체감 있는 텍스트 스타일 (화면 전용, 프린트 시 제외) */
+        .title-3d {
+            color: #dc2626;
+            text-shadow: 1px 1px 0 #fff, 2px 2px 0 #e5e5e5, 3px 3px 0 #d4d4d4, 4px 4px 6px rgba(0,0,0,0.3);
+        }
+
         /* ── 프린트 ── */
         @media print {
             /* 기본 리셋 */
@@ -100,7 +106,7 @@
 
             /* 헤더 */
             .main-header { border-bottom: 2px solid #fecaca !important; padding-bottom: 4px !important; margin-bottom: 10px !important; }
-            .main-header h1 { font-size: 18pt !important; font-weight: 900 !important; color: #000 !important; }
+            .main-header h1 { font-size: 18pt !important; font-weight: 900 !important; color: #000 !important; text-shadow: none !important; }
 
             /* 레이블 */
             label { font-size: 10pt !important; font-weight: bold !important; color: #374151 !important; margin-top: 0 !important; margin-bottom: 1px !important; display: block !important; }
@@ -183,7 +189,7 @@
 
         <!-- 타이틀 -->
         <div class="flex justify-between items-center mb-6 main-header">
-            <h1 class="text-xl sm:text-2xl font-extrabold text-red-600 pb-2 cursor-pointer hover:opacity-70 transition print-hidden" onclick="handleNewButton()" title="Click to reset">Glenview Florist</h1>
+            <h1 class="text-xl sm:text-2xl font-extrabold title-3d pb-2 cursor-pointer hover:opacity-70 transition print-hidden" onclick="handleNewButton()" title="Click to reset">Glenview Florist</h1>
             <h1 class="text-xl sm:text-2xl font-extrabold text-red-600 pb-2" style="display:none;" id="printTitle">Glenview Florist</h1>
             <div class="flex gap-2 print-hidden">
                 <button type="button" id="newButton" onclick="handleNewButton()"
