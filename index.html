@@ -35,6 +35,11 @@
             -moz-appearance: textfield;
         }
 
+        /* ✅ 검색으로 기존 데이터를 불러왔을 때 입력창 글자를 초록색으로 표시 */
+        #orderForm.data-loaded .input-field {
+            color: #16a34a;
+        }
+
         /* ── 모달 ── */
         .modal-overlay {
             display: none;
@@ -90,6 +95,7 @@
                 border-bottom: 1px dashed #999 !important;
                 height: auto !important; min-height: 18px !important;
                 display: block !important; width: 100% !important;
+                color: #000 !important; /* ✅ 프린트 시엔 초록색 표시 무시하고 검정으로 인쇄 */
             }
 
             /* 헤더 */
@@ -466,6 +472,9 @@
         // ✅ 카드번호 필드 잠금 해제 + 보기 버튼 숨기기 (New 주문은 마스킹 대상이 아님)
         document.getElementById('creditCardNumber').readOnly = false;
         document.getElementById('revealCardBtn').classList.add('hidden');
+
+        // ✅ 새 주문 입력 모드이므로 초록색 표시(불러온 데이터 표시) 해제
+        form.classList.remove('data-loaded');
     }
 
     function handleNewButton() {
@@ -585,6 +594,9 @@
         if (data['총액'])       totalAmountHiddenInput.value = data['총액'];
         if (data['텍스 비율'])  taxRateConfigInput.value     = data['텍스 비율'];
         calculateTotal();
+
+        // ✅ 검색으로 불러온 기존 데이터임을 시각적으로 표시 (모든 입력창 글자를 초록색으로)
+        form.classList.add('data-loaded');
 
         // ✅ 검색으로 불러온 카드번호는 마스킹된 상태이므로 필드를 잠그고
         //    "전체 보기" 버튼을 노출 (실수로 마스킹 값이 실제 값을 덮어쓰지 않도록 보호)
