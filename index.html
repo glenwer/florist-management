@@ -36,7 +36,7 @@
         }
 
         /* ── 모달 ── */
-        #searchModal {
+        .modal-overlay {
             display: none;
             position: fixed;
             inset: 0;
@@ -45,10 +45,10 @@
             align-items: center;
             justify-content: center;
         }
-        #searchModal.open {
+        .modal-overlay.open {
             display: flex;
         }
-        #searchModal .modal-box {
+        .modal-overlay .modal-box {
             background: white;
             border-radius: 14px;
             padding: 24px;
@@ -142,7 +142,7 @@
 <body class="p-4 sm:p-8">
 
     <!-- ══════════════ 검색 결과 모달 ══════════════ -->
-    <div id="searchModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div id="searchModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
         <div class="modal-box">
             <div class="flex justify-between items-center mb-4">
                 <h2 id="modalTitle" class="text-base font-bold text-gray-800">Search Results — Please Select</h2>
@@ -150,6 +150,25 @@
             </div>
             <p id="modalSubtitle" class="text-xs text-gray-500 mb-3"></p>
             <div id="modalList" class="flex flex-col gap-2 max-h-72 overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <!-- ══════════════ 카드번호 전체 보기 — 비밀번호 모달 ══════════════ -->
+    <div id="cardPasswordModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="cardPasswordModalTitle">
+        <div class="modal-box">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="cardPasswordModalTitle" class="text-base font-bold text-gray-800">Enter Password</h2>
+                <button onclick="closeCardPasswordModal()" class="text-gray-400 hover:text-gray-700 text-xl leading-none">&times;</button>
+            </div>
+            <p class="text-xs text-gray-500 mb-3">Enter the password to view the full card number.</p>
+            <input type="password" id="cardPasswordInput" class="input-field" autocomplete="off" placeholder="Password">
+            <p id="cardPasswordError" class="hidden text-xs text-red-600 mt-2"></p>
+            <div class="flex gap-2 justify-end mt-4">
+                <button type="button" onclick="closeCardPasswordModal()"
+                    class="text-sm px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition">Cancel</button>
+                <button type="button" onclick="submitCardPassword()"
+                    class="text-sm px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition">Confirm</button>
+            </div>
         </div>
     </div>
 
@@ -209,7 +228,7 @@
                         <div id="creditCardDiv">
                             <div class="flex items-center justify-between mb-1">
                                 <label for="creditCardNumber" class="block text-sm font-medium text-gray-700">Credit Card Number</label>
-                                <button type="button" id="revealCardBtn" onclick="revealCreditCard()"
+                                <button type="button" id="revealCardBtn" onclick="openCardPasswordModal()"
                                     class="hidden text-xs text-blue-500 hover:text-blue-700 font-medium print-hidden">🔓 Show Full Number</button>
                             </div>
                             <input type="text" id="creditCardNumber" name="크레딧 카드 번호" class="input-field" maxlength="30">
@@ -372,6 +391,9 @@
     const searchModal             = document.getElementById('searchModal');
     const modalList               = document.getElementById('modalList');
     const modalSubtitle           = document.getElementById('modalSubtitle');
+    const cardPasswordModal       = document.getElementById('cardPasswordModal');
+    const cardPasswordInput       = document.getElementById('cardPasswordInput');
+    const cardPasswordError       = document.getElementById('cardPasswordError');
 
     // ── 메시지 박스 ───────────────────────────────────
     let messageTimeout;
@@ -479,9 +501,12 @@
     }
 
     // ESC 키로 모달 닫기
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { closeModal(); closeCardPasswordModal(); }
+    });
     // 배경 클릭으로 모달 닫기
     searchModal.addEventListener('click', e => { if (e.target === searchModal) closeModal(); });
+    cardPasswordModal.addEventListener('click', e => { if (e.target === cardPasswordModal) closeCardPasswordModal(); });
 
     // ── 검색 (부분 이름 포함, 다중 결과 지원) ──────────
     // ✅ 검색은 이름만 넘어가는 GET이라 민감 정보 노출 문제 없음 — 그대로 유지
@@ -568,14 +593,30 @@
         }
     }
 
-    // ── 카드번호 전체 보기 (비밀번호 확인 후 서버에서 실제 값 조회) ──
-    async function revealCreditCard() {
+    // ── 카드번호 전체 보기 (드롭다운 모달로 비밀번호 입력 → 서버에서 실제 값 조회) ──
+    function openCardPasswordModal() {
         if (!recordIdentifierHiddenInput.value) {
             showMessage('⚠️ Please search for a customer first.', 'bg-yellow-100 text-yellow-800');
             return;
         }
-        const password = prompt('Enter the password to view the full card number:');
-        if (password === null) return; // 취소함
+        cardPasswordInput.value = '';
+        cardPasswordError.classList.add('hidden');
+        cardPasswordModal.classList.add('open');
+        setTimeout(() => cardPasswordInput.focus(), 50);
+    }
+
+    function closeCardPasswordModal() {
+        cardPasswordModal.classList.remove('open');
+    }
+
+    // Enter 키로 바로 확인
+    cardPasswordInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); submitCardPassword(); }
+    });
+
+    async function submitCardPassword() {
+        const password = cardPasswordInput.value;
+        cardPasswordError.classList.add('hidden');
 
         try {
             const response = await fetch(GOOGLE_SHEET_APPS_SCRIPT_URL, {
@@ -594,13 +635,16 @@
                 const cardInput = document.getElementById('creditCardNumber');
                 cardInput.value = result.cardNumber;
                 cardInput.readOnly = false; // 필요하면 바로 수정도 가능하게 잠금 해제
+                closeCardPasswordModal();
                 showMessage('🔓 Full card number displayed.', 'bg-green-100 text-green-800');
             } else {
-                showMessage(`❌ ${result.message || 'Incorrect password.'}`, 'bg-red-100 text-red-800');
+                cardPasswordError.textContent = result.message || 'Incorrect password.';
+                cardPasswordError.classList.remove('hidden');
             }
         } catch (err) {
             console.error(err);
-            showMessage('❌ Request failed. Network error.', 'bg-red-100 text-red-800');
+            cardPasswordError.textContent = 'Request failed. Network error.';
+            cardPasswordError.classList.remove('hidden');
         }
     }
 
