@@ -161,7 +161,8 @@
                 <button onclick="closeCardPasswordModal()" class="text-gray-400 hover:text-gray-700 text-xl leading-none">&times;</button>
             </div>
             <p class="text-xs text-gray-500 mb-3">Enter the password to view the full card number.</p>
-            <input type="password" id="cardPasswordInput" class="input-field" autocomplete="off" placeholder="Password">
+            <input type="password" id="cardPasswordInput" class="input-field text-center tracking-[0.5em]" autocomplete="off"
+                placeholder="••••" maxlength="4" inputmode="numeric" pattern="[0-9]*">
             <p id="cardPasswordError" class="hidden text-xs text-red-600 mt-2"></p>
             <div class="flex gap-2 justify-end mt-4">
                 <button type="button" onclick="closeCardPasswordModal()"
@@ -612,6 +613,11 @@
     // Enter 키로 바로 확인
     cardPasswordInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') { e.preventDefault(); submitCardPassword(); }
+    });
+
+    // 숫자만, 4자리까지만 입력되도록 제한
+    cardPasswordInput.addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, '').slice(0, 4);
     });
 
     async function submitCardPassword() {
