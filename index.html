@@ -206,29 +206,29 @@
                 <div id="customerInfoSection" class="mb-6 pt-2">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div>
-                            <label for="customerName" class="block text-sm font-medium text-gray-700 mb-1">
+                            <label for="customerName" class="block text-sm font-bold text-gray-700 mb-1">
                                 Customer Name *
                             </label>
                             <input type="text" id="customerName" name="손님 이름" required class="input-field" autocomplete="off"
                                 placeholder="Type name, then press Enter">
                         </div>
                         <div>
-                            <label for="orderDate" class="block text-sm font-medium text-gray-700 mb-1">Order Date *</label>
+                            <label for="orderDate" class="block text-sm font-bold text-gray-700 mb-1">Order Date *</label>
                             <input type="date" id="orderDate" name="주문 일자" required class="input-field">
                         </div>
                         <div id="customerPhoneDiv">
-                            <label for="customerPhone" class="block text-sm font-medium text-gray-700 mb-1">Customer Phone *</label>
+                            <label for="customerPhone" class="block text-sm font-bold text-gray-700 mb-1">Customer Phone *</label>
                             <input type="tel" id="customerPhone" name="손님 전화번호" required class="input-field">
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div id="customerAddressDiv">
-                            <label for="customerAddress" class="block text-sm font-medium text-gray-700 mb-1">Customer Address</label>
+                            <label for="customerAddress" class="block text-sm font-bold text-gray-700 mb-1">Customer Address</label>
                             <input type="text" id="customerAddress" name="손님 주소" class="input-field">
                         </div>
                         <div id="creditCardDiv">
                             <div class="flex items-center justify-between mb-1">
-                                <label for="creditCardNumber" class="block text-sm font-medium text-gray-700">Credit Card Number</label>
+                                <label for="creditCardNumber" class="block text-sm font-bold text-gray-700">Credit Card Number</label>
                                 <button type="button" id="revealCardBtn" onclick="openCardPasswordModal()"
                                     class="hidden text-xs text-blue-500 hover:text-blue-700 font-medium print-hidden">🔓 Show Full Number</button>
                             </div>
@@ -242,7 +242,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <div class="flex items-center gap-2 mb-1">
-                                <label for="recipientName" class="text-sm font-medium text-gray-700">Recipient Name *</label>
+                                <label for="recipientName" class="text-sm font-bold text-gray-700">Recipient Name *</label>
                                 <label class="flex items-center gap-1 cursor-pointer select-none print-hidden">
                                     <input type="checkbox" id="sameAsCustomer" class="w-3.5 h-3.5 accent-red-500" onchange="fillSameAsCustomer(this.checked)">
                                     <span class="text-xs text-gray-400">Same as customer</span>
@@ -251,20 +251,20 @@
                             <input type="text" id="recipientName" name="받는 사람 이름" required class="input-field">
                         </div>
                         <div>
-                            <label for="deliveryDate" class="block text-sm font-medium text-gray-700 mb-1">Delivery Date *</label>
+                            <label for="deliveryDate" class="block text-sm font-bold text-gray-700 mb-1">Delivery Date *</label>
                             <input type="date" id="deliveryDate" name="배달 일자" required class="input-field">
                         </div>
                         <div>
-                            <label for="recipientAddress" class="block text-sm font-medium text-gray-700 mb-1">Recipient Address *</label>
+                            <label for="recipientAddress" class="block text-sm font-bold text-gray-700 mb-1">Recipient Address *</label>
                             <input type="text" id="recipientAddress" name="받는 사람 주소" required class="input-field">
                         </div>
                         <div>
-                            <label for="recipientPhone" class="block text-sm font-medium text-gray-700 mb-1">Recipient Phone *</label>
+                            <label for="recipientPhone" class="block text-sm font-bold text-gray-700 mb-1">Recipient Phone *</label>
                             <input type="tel" id="recipientPhone" name="받는 사람 전화번호" required class="input-field">
                         </div>
                     </div>
                     <div class="pt-2">
-                        <label for="messageCard" class="block text-sm font-medium text-gray-700 mb-1">Message Card Content</label>
+                        <label for="messageCard" class="block text-sm font-bold text-gray-700 mb-1">Message Card Content</label>
                         <textarea id="messageCard" name="메세지 카드" rows="1" class="input-field"></textarea>
                     </div>
                 </div>
@@ -323,28 +323,28 @@
             <!-- 상품 & 금액 -->
             <div class="mb-6 pt-4">
                 <div class="mb-4">
-                    <label for="productDetails" class="block text-sm font-medium text-gray-700 mb-1">Product Details *</label>
+                    <label for="productDetails" class="block text-sm font-bold text-gray-700 mb-1">Product Details *</label>
                     <textarea id="productDetails" name="상품 내용" rows="1" required class="input-field"></textarea>
                 </div>
                 <div id="amountGrid" class="grid grid-cols-2 md:grid-cols-5 gap-4">
                     <div>
-                        <label for="productAmount" class="block text-sm font-medium text-gray-700 mb-1">Product Amount *</label>
+                        <label for="productAmount" class="block text-sm font-bold text-gray-700 mb-1">Product Amount *</label>
                         <input type="number" id="productAmount" name="상품 금액" min="0" step="0.01" required class="input-field amount-input text-right" placeholder="0.00">
                     </div>
                     <div>
-                        <label for="deliveryFee" class="block text-sm font-medium text-gray-700 mb-1">Delivery Fee *</label>
+                        <label for="deliveryFee" class="block text-sm font-bold text-gray-700 mb-1">Delivery Fee *</label>
                         <input type="number" id="deliveryFee" name="배달료" min="0" required class="input-field amount-input text-right" placeholder="0">
                     </div>
                     <div class="print-hidden">
-                        <label for="taxRateConfig" class="block text-sm font-medium text-gray-700 mb-1">Tax Rate (%) *</label>
+                        <label for="taxRateConfig" class="block text-sm font-bold text-gray-700 mb-1">Tax Rate (%) *</label>
                         <input type="number" id="taxRateConfig" name="텍스 비율" min="0" step="0.01" required class="input-field amount-input text-right" value="10.75" tabindex="-1">
                     </div>
                     <div>
-                        <label for="calculatedTaxDisplay" class="block text-sm font-medium text-gray-700 mb-1">Tax</label>
+                        <label for="calculatedTaxDisplay" class="block text-sm font-bold text-gray-700 mb-1">Tax</label>
                         <input type="text" id="calculatedTaxDisplay" class="input-field text-gray-900 text-right font-semibold bg-gray-100" readonly value="0.00">
                     </div>
                     <div>
-                        <label for="totalAmountDisplay" class="block text-sm text-red-600 mb-1">Total</label>
+                        <label for="totalAmountDisplay" class="block text-sm font-bold text-red-600 mb-1">Total</label>
                         <input type="text" id="totalAmountDisplay" class="input-field text-red-800 font-bold text-right bg-red-50" readonly value="0.00">
                     </div>
                 </div>
