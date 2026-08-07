@@ -86,50 +86,14 @@
             text-shadow: 1px 1px 0 #fff, 2px 2px 0 #e5e5e5, 3px 3px 0 #d4d4d4, 4px 4px 6px rgba(0,0,0,0.3);
         }
 
-        /* ── 신규 주문 알림 카드 ── */
-        #orderNotificationContainer {
-            position: fixed;
-            top: 16px;
-            right: 16px;
-            z-index: 200;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            max-width: 340px;
-        }
-        .order-notification-card {
-            background: white;
-            border-left: 4px solid #ef4444;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.18);
-            border-radius: 10px;
-            padding: 12px 14px;
-            animation: notifyIn 0.25s ease;
-        }
-        @keyframes notifyIn {
-            from { transform: translateX(20px); opacity: 0; }
-            to   { transform: translateX(0);    opacity: 1; }
-        }
-        .notif-source-online { color: #2563eb; }
-        .notif-source-phone  { color: #ea580c; }
-
-        /* ✅ 검색 결과 / 폼에 표시되는 주문 출처 배지 */
-        .source-badge {
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 9999px;
-        }
-        .source-badge.online { background: #dbeafe; color: #1d4ed8; }
-        .source-badge.phone  { background: #ffedd5; color: #c2410c; }
-
         /* ── 프린트 ── */
         @media print {
             /* 기본 리셋 */
             .print-hidden, .message-box { display: none !important; }
-            #orderNotificationContainer { display: none !important; }
             #printTitle { display: block !important; }
             body       { background: white !important; padding: 0 !important; margin: 0 !important; font-size: 10pt; }
-            .max-w-4xl { box-shadow: none !important; max-width: none !important; padding: 6px 10px !important; margin: 0 !important; }
+            .max-w-4xl { box-shadow: none !important; max-width: none !important; padding: 10px 14px !important; margin: 0 !important;
+                          border: 2px solid #000 !important; border-radius: 0 !important; }
 
             /* 입력 필드 → 밑줄 텍스트 스타일 */
             .input-field {
@@ -142,8 +106,8 @@
             }
 
             /* 헤더 */
-            .main-header { border-bottom: 2px solid #fecaca !important; padding-bottom: 4px !important; margin-bottom: 10px !important; }
-            .main-header h1 { font-size: 18pt !important; font-weight: 900 !important; color: #000 !important; text-shadow: none !important; }
+            .main-header { border-bottom: 3px double #000 !important; padding-bottom: 5px !important; margin-bottom: 10px !important; }
+            .main-header h1 { font-size: 18pt !important; font-weight: 900 !important; color: #000 !important; text-shadow: none !important; letter-spacing: 0.5px !important; }
 
             /* 레이블 */
             label { font-size: 10pt !important; font-weight: bold !important; color: #374151 !important; margin-top: 0 !important; margin-bottom: 1px !important; display: block !important; }
@@ -158,12 +122,25 @@
             #printInfoContainer {
                 display: grid !important;
                 grid-template-columns: 1fr 1fr !important;
-                gap: 32px !important;
-                margin-bottom: 12px !important;
+                gap: 12px !important;
+                margin-bottom: 10px !important;
                 page-break-inside: avoid !important;
                 align-items: start !important;
             }
-            .print-col { display: block !important; }
+            .print-col {
+                display: block !important;
+                border: 1.5px solid #000 !important;
+                padding: 8px 10px 10px 10px !important;
+            }
+            .print-box-title {
+                font-size: 9.5pt !important;
+                font-weight: 900 !important;
+                letter-spacing: 1.5px !important;
+                text-transform: uppercase !important;
+                border-bottom: 1px solid #000 !important;
+                padding-bottom: 3px !important;
+                margin-bottom: 6px !important;
+            }
 
             /* 각 행: 레이블 + 값 */
             .print-row          { margin-bottom: 2px !important; }
@@ -176,22 +153,61 @@
                 word-break: break-word !important;
             }
             /* 오른쪽 컬럼: 주문일자에 맞춰 배달일자 등 위에 공백 추가 */
-            .print-row-gap      { margin-top: 18px !important; margin-bottom: 2px !important; }
+            .print-row-gap      { margin-top: 10px !important; margin-bottom: 2px !important; }
 
-            /* ── 상품 & 금액 ── */
-            #amountGrid {
-                display: flex !important; flex-wrap: wrap;
-                justify-content: space-between; gap: 4px;
+            /* ── 카드 메시지 전용 박스 (플로리스트 티켓 스타일: 크고 눈에 띄게) ── */
+            #printMessageBox {
+                display: block !important;
+                border: 1.5px solid #000 !important;
+                padding: 8px 10px 10px 10px !important;
+                margin-bottom: 10px !important;
+                page-break-inside: avoid !important;
             }
-            #amountGrid > div        { width: 24% !important; margin-bottom: 0 !important; }
-            #amountGrid .input-field { text-align: left !important; }
+            #printMessageBox #p_messageCard {
+                font-size: 12pt !important;
+                min-height: 40px !important;
+            }
+
+            #productDetails {
+                border: 1.5px solid #000 !important;
+                padding: 6px 8px !important;
+                min-height: 30px !important;
+                font-size: 10.5pt !important;
+            }
+
+            /* ── 상품 & 금액 (인보이스 스타일 요약 바) ── */
+            #amountGrid {
+                display: flex !important;
+                border: 1.5px solid #000 !important;
+                margin-top: 6px !important;
+                page-break-inside: avoid !important;
+            }
+            #amountGrid > div {
+                flex: 1 !important;
+                width: auto !important;
+                margin-bottom: 0 !important;
+                padding: 5px 8px !important;
+                border-right: 1px solid #000 !important;
+            }
+            #amountGrid > div:last-child {
+                border-right: none !important;
+                background: #f3f4f6 !important;
+            }
+            #amountGrid label {
+                text-align: center !important;
+                font-size: 8.5pt !important;
+                letter-spacing: 1px !important;
+                text-transform: uppercase !important;
+            }
+            #amountGrid .input-field {
+                text-align: center !important;
+                font-weight: bold !important;
+            }
+            #totalAmountDisplay { font-size: 13pt !important; }
         }
     </style>
 </head>
 <body class="p-4 sm:p-8">
-
-    <!-- ══════════════ 신규 주문 알림 (화면 우측 상단) ══════════════ -->
-    <div id="orderNotificationContainer"></div>
 
     <!-- ══════════════ 검색 결과 모달 ══════════════ -->
     <div id="searchModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
@@ -229,10 +245,7 @@
 
         <!-- 타이틀 -->
         <div class="flex justify-between items-center mb-6 main-header">
-            <div class="flex items-center gap-3 print-hidden">
-                <h1 class="text-xl sm:text-2xl font-extrabold title-3d pb-2 cursor-pointer hover:opacity-70 transition" onclick="handleNewButton()" title="Click to reset">Glenview Florist</h1>
-                <span id="orderSourceBadge" class="source-badge hidden"></span>
-            </div>
+            <h1 class="text-xl sm:text-2xl font-extrabold title-3d pb-2 cursor-pointer hover:opacity-70 transition print-hidden" onclick="handleNewButton()" title="Click to reset">Glenview Florist</h1>
             <h1 class="text-xl sm:text-2xl font-extrabold text-red-600 pb-2" style="display:none;" id="printTitle">Glenview Florist</h1>
             <div class="flex gap-2 print-hidden">
                 <button type="button" id="newButton" onclick="handleNewButton()"
@@ -288,7 +301,6 @@
                                     class="hidden text-xs text-blue-500 hover:text-blue-700 font-medium print-hidden">🔓 Show Full Number</button>
                             </div>
                             <input type="text" id="creditCardNumber" name="크레딧 카드 번호" class="input-field" maxlength="30">
-                            <p id="onlineCardNotice" class="hidden text-xs text-blue-600 mt-1">🌐 Online order — only the last 4 digits are available (full number was never collected).</p>
                         </div>
                     </div>
                 </div>
@@ -330,8 +342,9 @@
             <div id="printInfoContainer" style="display:none;">
                 <!-- 왼쪽: 손님 정보 -->
                 <div class="print-col">
+                    <div class="print-box-title">Customer</div>
                     <div class="print-row">
-                        <label>Customer Name</label>
+                        <label>Name</label>
                         <div class="input-field" id="p_customerName"></div>
                     </div>
                     <div class="print-row-gap">
@@ -339,11 +352,11 @@
                         <div class="input-field" id="p_orderDate"></div>
                     </div>
                     <div class="print-row-gap">
-                        <label>Customer Address</label>
+                        <label>Address</label>
                         <div class="input-field" id="p_customerAddress"></div>
                     </div>
                     <div class="print-row-gap">
-                        <label>Customer Phone</label>
+                        <label>Phone</label>
                         <div class="input-field" id="p_customerPhone"></div>
                     </div>
                     <div class="print-row-gap">
@@ -353,8 +366,9 @@
                 </div>
                 <!-- 오른쪽: 받는 사람 정보 -->
                 <div class="print-col">
+                    <div class="print-box-title">Deliver To</div>
                     <div class="print-row">
-                        <label>Recipient Name</label>
+                        <label>Name</label>
                         <div class="input-field" id="p_recipientName"></div>
                     </div>
                     <div class="print-row-gap">
@@ -362,18 +376,20 @@
                         <div class="input-field" id="p_deliveryDate"></div>
                     </div>
                     <div class="print-row-gap">
-                        <label>Recipient Address</label>
+                        <label>Address</label>
                         <div class="input-field" id="p_recipientAddress"></div>
                     </div>
                     <div class="print-row-gap">
-                        <label>Recipient Phone</label>
+                        <label>Phone</label>
                         <div class="input-field" id="p_recipientPhone"></div>
                     </div>
-                    <div class="print-row-gap">
-                        <label>Message Card Content</label>
-                        <div class="input-field" id="p_messageCard"></div>
-                    </div>
                 </div>
+            </div>
+
+            <!-- ✅ 카드 메시지 전용 박스 (플로리스트 티켓 스타일) -->
+            <div id="printMessageBox" style="display:none;">
+                <div class="print-box-title">Card Message</div>
+                <div class="input-field" id="p_messageCard"></div>
             </div>
 
             <!-- 상품 & 금액 -->
@@ -451,8 +467,6 @@
     const cardPasswordModal       = document.getElementById('cardPasswordModal');
     const cardPasswordInput       = document.getElementById('cardPasswordInput');
     const cardPasswordError       = document.getElementById('cardPasswordError');
-    const orderSourceBadge        = document.getElementById('orderSourceBadge');
-    const onlineCardNotice        = document.getElementById('onlineCardNotice');
 
     // ── 메시지 박스 ───────────────────────────────────
     let messageTimeout;
@@ -524,10 +538,6 @@
         // ✅ 카드번호 필드 잠금 해제 + 보기 버튼 숨기기 (New 주문은 마스킹 대상이 아님)
         document.getElementById('creditCardNumber').readOnly = false;
         document.getElementById('revealCardBtn').classList.add('hidden');
-        onlineCardNotice.classList.add('hidden');
-
-        // ✅ 주문 출처 배지 숨기기 (New 주문은 아직 출처가 정해지지 않음)
-        orderSourceBadge.classList.add('hidden');
 
         // ✅ 새 주문 입력 모드이므로 초록색 표시(불러온 데이터 표시) 해제
         form.classList.remove('data-loaded');
@@ -546,12 +556,8 @@
         records.forEach(rec => {
             const item = document.createElement('div');
             item.className = 'modal-item';
-            const isOnline = rec['주문 출처'] === 'Online';
-            const badge = isOnline
-                ? `<span class="source-badge online ml-1">🌐 Online</span>`
-                : `<span class="source-badge phone ml-1">📞 Phone</span>`;
             item.innerHTML = `
-                <div class="name">${rec['손님 이름'] || ''} ${badge}</div>
+                <div class="name">${rec['손님 이름'] || ''}</div>
                 <div class="detail">Order: ${rec['주문 일자'] || ''} &nbsp;|&nbsp; Phone: ${rec['손님 전화번호'] || ''} &nbsp;|&nbsp; Delivery: ${rec['배달 일자'] || ''}</div>`;
             item.addEventListener('click', () => {
                 populateForm(rec);
@@ -658,31 +664,11 @@
         // ✅ 검색으로 불러온 기존 데이터임을 시각적으로 표시 (모든 입력창 글자를 초록색으로)
         form.classList.add('data-loaded');
 
-        // ✅ 주문 출처(Online/Phone)에 따라 배지 표시 + 카드번호 UI 분기
-        const isOnline = data['주문 출처'] === 'Online';
-        const cardInput = document.getElementById('creditCardNumber');
-        const revealBtn = document.getElementById('revealCardBtn');
-
-        if (data['주문 출처']) {
-            orderSourceBadge.textContent = isOnline ? '🌐 Online Order' : '📞 Phone Order';
-            orderSourceBadge.className = 'source-badge ' + (isOnline ? 'online' : 'phone');
-            orderSourceBadge.classList.remove('hidden');
-        } else {
-            orderSourceBadge.classList.add('hidden');
-        }
-
+        // ✅ 검색으로 불러온 카드번호는 마스킹된 상태이므로 필드를 잠그고
+        //    "전체 보기" 버튼을 노출 (실수로 마스킹 값이 실제 값을 덮어쓰지 않도록 보호)
         if (data['크레딧 카드 번호'] !== undefined) {
-            cardInput.readOnly = true;
-            if (isOnline) {
-                // ✅ 온라인 주문은 애초에 전체 카드번호가 없으므로
-                //    "전체 보기" 버튼을 숨기고 대신 안내 문구를 표시
-                revealBtn.classList.add('hidden');
-                onlineCardNotice.classList.remove('hidden');
-            } else {
-                // ✅ 전화 주문은 기존처럼 비밀번호로 전체 번호 열람 가능
-                revealBtn.classList.remove('hidden');
-                onlineCardNotice.classList.add('hidden');
-            }
+            document.getElementById('creditCardNumber').readOnly = true;
+            document.getElementById('revealCardBtn').classList.remove('hidden');
         }
     }
 
@@ -794,8 +780,6 @@
                 // ✅ 등록/수정 성공 후 폼을 초기화하여 다음 손님 정보와 섞이거나
                 //    같은 내용을 실수로 중복 등록하는 것을 방지
                 clearAllFormFields();
-                // ✅ 방금 내가 저장한 주문이 "새 주문 알림"으로 다시 뜨지 않도록 커서를 앞당김
-                markNotificationCursorNow();
             } else {
                 showMessage(`❌ Failed: ${result.message}`, 'bg-red-100 text-red-800');
             }
@@ -928,111 +912,6 @@
         });
     });
 
-    // ════════════════════════════════════════════════════════════
-    // 신규 주문 실시간 알림 (폴링 방식)
-    // 이 페이지를 매장 컴퓨터에 열어두면 30초마다 서버에 새 주문이
-    // 있는지 확인하고, 있으면 화면 카드 알림 + 소리 + 브라우저 알림을 띄움
-    // ════════════════════════════════════════════════════════════
-    const NOTIFICATION_POLL_INTERVAL_MS = 30000; // 30초마다 확인
-    const NOTIFICATION_CURSOR_KEY = 'gf_lastSeenOrderTimestamp';
-    let lastSeenTimestamp = localStorage.getItem(NOTIFICATION_CURSOR_KEY) || '';
-    let isFirstCheck = !lastSeenTimestamp; // 처음 방문이면 과거 주문을 한꺼번에 알리지 않음
-
-    function playNotificationSound() {
-        try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            [880, 1175].forEach((freq, i) => {
-                const osc  = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.frequency.value = freq;
-                const start = ctx.currentTime + i * 0.15;
-                gain.gain.setValueAtTime(0.001, start);
-                gain.gain.exponentialRampToValueAtTime(0.18, start + 0.02);
-                gain.gain.exponentialRampToValueAtTime(0.001, start + 0.18);
-                osc.start(start);
-                osc.stop(start + 0.2);
-            });
-        } catch (err) {
-            // 오디오 재생 실패는 조용히 무시 (브라우저 정책 등으로 막힐 수 있음)
-        }
-    }
-
-    function showOrderNotificationCards(orders) {
-        const container = document.getElementById('orderNotificationContainer');
-        orders.forEach(o => {
-            const isOnline = o['주문 출처'] === 'Online';
-            const card = document.createElement('div');
-            card.className = 'order-notification-card';
-            card.innerHTML = `
-                <div class="flex justify-between items-start gap-3">
-                    <div class="min-w-0">
-                        <div class="text-xs font-bold ${isOnline ? 'notif-source-online' : 'notif-source-phone'}">
-                            ${isOnline ? '🌐 New Online Order' : '📞 New Phone Order'}
-                        </div>
-                        <div class="font-bold text-gray-800 truncate">${o['손님 이름'] || 'Customer'}</div>
-                        <div class="text-xs text-gray-500 mt-0.5 truncate">${o['상품 내용'] || ''}</div>
-                        ${o['총액'] ? `<div class="text-xs text-gray-400 mt-0.5">$${o['총액']}</div>` : ''}
-                    </div>
-                    <button class="text-gray-400 hover:text-gray-700 text-lg leading-none flex-shrink-0" onclick="this.closest('.order-notification-card').remove()">&times;</button>
-                </div>`;
-            container.appendChild(card);
-            // 15초 후 자동으로 사라짐 (직원이 안 눌러도 화면이 계속 쌓이지 않도록)
-            setTimeout(() => { if (card.parentNode) card.remove(); }, 15000);
-        });
-
-        playNotificationSound();
-
-        if ('Notification' in window && Notification.permission === 'granted') {
-            const first = orders[0];
-            const n = new Notification('🌸 New Order — Glenview Florist', {
-                body: `${first['손님 이름'] || 'Customer'} — ${first['상품 내용'] || ''}` +
-                      (orders.length > 1 ? ` (+${orders.length - 1} more)` : ''),
-                tag: 'glenview-florist-new-order'
-            });
-            n.onclick = () => { window.focus(); n.close(); };
-        }
-    }
-
-    async function checkForNewOrders() {
-        try {
-            const url = `${GOOGLE_SHEET_APPS_SCRIPT_URL}?action=checkNewOrders&since=${encodeURIComponent(lastSeenTimestamp)}`;
-            const response = await fetch(url);
-            if (!response.ok) return;
-            const result = await response.json();
-            if (result.result !== 'success') return;
-
-            if (!isFirstCheck && result.newOrders && result.newOrders.length > 0) {
-                showOrderNotificationCards(result.newOrders);
-            }
-            isFirstCheck = false;
-
-            if (result.latestTimestamp) {
-                lastSeenTimestamp = result.latestTimestamp;
-                localStorage.setItem(NOTIFICATION_CURSOR_KEY, lastSeenTimestamp);
-            }
-        } catch (err) {
-            console.error('New order check failed:', err);
-        }
-    }
-
-    // 내가 방금 등록/수정한 주문이 곧바로 "새 주문"으로 다시 뜨는 걸 방지
-    function markNotificationCursorNow() {
-        const nowIso = new Date().toISOString();
-        lastSeenTimestamp = nowIso;
-        localStorage.setItem(NOTIFICATION_CURSOR_KEY, nowIso);
-    }
-
-    function initOrderNotifications() {
-        if ('Notification' in window && Notification.permission === 'default') {
-            // 브라우저 정책상 사용자 제스처 없이 막힐 수도 있지만 시도는 해봄
-            Notification.requestPermission();
-        }
-        checkForNewOrders();
-        setInterval(checkForNewOrders, NOTIFICATION_POLL_INTERVAL_MS);
-    }
-
     // ── 초기 로드 ─────────────────────────────────────
     window.onload = function() {
         orderDateInput.value    = todayStr();
@@ -1041,7 +920,6 @@
         deliveryFeeInput.value   = '0';
         taxRateConfigInput.value = getDefaultTaxRate(); // ✅ 2026-08-01부터 11% 자동 적용
         calculateTotal();
-        initOrderNotifications();
     };
 </script>
 </body>
