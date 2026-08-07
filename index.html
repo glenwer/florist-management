@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glenview Florist Order Management Form</title>
+    <title>Glenview Florist</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
@@ -25,7 +25,16 @@
             outline: none;
         }
 
-        /* ✅ 금액 입력 필드의 위/아래 스피너 화살표 제거 (상품 금액, 배달료, 텍스 비율) */
+        /* ✅ 금액 입력창 앞 $ 기호 */
+        .currency-prefix {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            font-weight: 600;
+            pointer-events: none;
+        }
         .amount-input::-webkit-outer-spin-button,
         .amount-input::-webkit-inner-spin-button {
             -webkit-appearance: none;
@@ -90,7 +99,12 @@
         @media print {
             /* 기본 리셋 */
             .print-hidden, .message-box { display: none !important; }
-            #printTitle { display: block !important; }
+            #printHeaderRow {
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: baseline !important;
+                width: 100% !important;
+            }
             body       { background: white !important; padding: 0 !important; margin: 0 !important; font-size: 10pt; }
             .max-w-4xl { box-shadow: none !important; max-width: none !important; padding: 10px 14px !important; margin: 0 !important;
                           border: 2px solid #000 !important; border-radius: 0 !important; }
@@ -108,6 +122,13 @@
             /* 헤더 */
             .main-header { border-bottom: 3px double #000 !important; padding-bottom: 5px !important; margin-bottom: 10px !important; }
             .main-header h1 { font-size: 18pt !important; font-weight: 900 !important; color: #000 !important; text-shadow: none !important; letter-spacing: 0.5px !important; }
+            #printShopInfo {
+                font-size: 10pt !important;
+                font-weight: normal !important;
+                color: #000 !important;
+                text-align: right !important;
+                line-height: 1.4 !important;
+            }
 
             /* 레이블 */
             label { font-size: 10pt !important; font-weight: bold !important; color: #374151 !important; margin-top: 0 !important; margin-bottom: 1px !important; display: block !important; }
@@ -173,6 +194,14 @@
                 padding: 6px 8px !important;
                 min-height: 30px !important;
                 font-size: 10.5pt !important;
+            }
+
+            #productAmount, #deliveryFee {
+                padding-left: 14px !important;
+            }
+            .currency-prefix {
+                left: 0 !important;
+                font-size: 9pt !important;
             }
 
             /* ── 상품 & 금액 (인보이스 스타일 요약 바) ── */
@@ -246,7 +275,10 @@
         <!-- 타이틀 -->
         <div class="flex justify-between items-center mb-6 main-header">
             <h1 class="text-xl sm:text-2xl font-extrabold title-3d pb-2 cursor-pointer hover:opacity-70 transition print-hidden" onclick="handleNewButton()" title="Click to reset">Glenview Florist</h1>
-            <h1 class="text-xl sm:text-2xl font-extrabold text-red-600 pb-2" style="display:none;" id="printTitle">Glenview Florist</h1>
+            <div id="printHeaderRow" style="display:none;">
+                <h1 class="text-xl sm:text-2xl font-extrabold text-red-600 pb-2" id="printTitle">Glenview Florist</h1>
+                <div id="printShopInfo">1813 Waukegan Rd, Glenview IL 60025<br>847-998-0717</div>
+            </div>
             <div class="flex gap-2 print-hidden">
                 <button type="button" id="newButton" onclick="handleNewButton()"
                     class="text-sm px-3 py-1 bg-red-600 text-white rounded-lg shadow transition hover:bg-red-700 flex items-center gap-1">
@@ -401,11 +433,17 @@
                 <div id="amountGrid" class="grid grid-cols-2 md:grid-cols-5 gap-4">
                     <div>
                         <label for="productAmount" class="block text-sm font-bold text-gray-700 mb-1">Product Amount *</label>
-                        <input type="number" id="productAmount" name="상품 금액" min="0" step="0.01" required class="input-field amount-input text-right" placeholder="0.00">
+                        <div class="relative">
+                            <span class="currency-prefix">$</span>
+                            <input type="number" id="productAmount" name="상품 금액" min="0" step="0.01" required class="input-field amount-input text-right pl-6" placeholder="0.00">
+                        </div>
                     </div>
                     <div>
                         <label for="deliveryFee" class="block text-sm font-bold text-gray-700 mb-1">Delivery Fee *</label>
-                        <input type="number" id="deliveryFee" name="배달료" min="0" required class="input-field amount-input text-right" placeholder="0">
+                        <div class="relative">
+                            <span class="currency-prefix">$</span>
+                            <input type="number" id="deliveryFee" name="배달료" min="0" required class="input-field amount-input text-right pl-6" placeholder="0">
+                        </div>
                     </div>
                     <div class="print-hidden">
                         <label for="taxRateConfig" class="block text-sm font-bold text-gray-700 mb-1">Tax Rate (%) *</label>
@@ -504,8 +542,8 @@
         const total = pi + di + ti;
         const tax   = (ti   / M).toFixed(2);
         const tot   = (total/ M).toFixed(2);
-        calculatedTaxDisplayInput.value = tax;
-        totalAmountDisplayInput.value   = tot;
+        calculatedTaxDisplayInput.value = '$' + tax;
+        totalAmountDisplayInput.value   = '$' + tot;
         taxAmountHiddenInput.value      = tax;
         totalAmountHiddenInput.value    = tot;
     }
