@@ -932,8 +932,13 @@
     document.getElementById('orderDate').addEventListener('change', function() {
         if (recordIdentifierHiddenInput.value) {
             const originalDate = document.getElementById('originalOrderDateHidden').value;
+            const cardInput = document.getElementById('creditCardNumber');
             if (orderDateInput.value !== originalDate) {
-                showMessage('📋 Order date changed. This will be saved as a new order.', 'bg-blue-100 text-blue-800');
+                showMessage('📋 Order date changed. This will be saved as a new order — please re-enter the card number.', 'bg-blue-100 text-blue-800');
+                // ✅ 새 주문으로 전환됨 — 마스킹된 카드번호가 그대로 저장되지 않도록 비우고 다시 입력받음
+                cardInput.value = '';
+                cardInput.readOnly = false;
+                document.getElementById('revealCardBtn').classList.add('hidden');
             } else {
                 showMessage('✏️ Reverted to the original order date. This will update the existing order.', 'bg-gray-100 text-gray-700');
             }
@@ -1026,6 +1031,14 @@
     function dismissNewOrderAlert() {
         document.getElementById('newOrderAlert').classList.add('hidden');
     }
+
+    // ✅ 배너 바깥 아무 곳이나 클릭하면 자동으로 닫힘
+    document.addEventListener('click', function(e) {
+        const banner = document.getElementById('newOrderAlert');
+        if (!banner.classList.contains('hidden') && !banner.contains(e.target)) {
+            dismissNewOrderAlert();
+        }
+    });
 
     function showNewOrderAlert(orders) {
         const banner = document.getElementById('newOrderAlert');
