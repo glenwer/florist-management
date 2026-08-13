@@ -815,6 +815,26 @@
 
     // ── 데이터 전송 (POST + text/plain — CORS preflight 회피, 응답 확인 가능) ──
     // ✅ 카드번호 등 민감 정보가 더 이상 URL 쿼리스트링에 노출되지 않음
+    // ✅ 저장 요청이 실패로 보일 때, 실제로는 서버에 저장됐을 수 있으므로(Apps Script 리다이렉트 특성)
+    //    이름+주문일자로 재검색해서 진짜 저장됐는지 확인
+    async function verifyOrderSaved(data) {
+        try {
+            const name = data['손님 이름'];
+            const orderDate = data['주문 일자'];
+            if (!name) return false;
+            const url = `${GOOGLE_SHEET_APPS_SCRIPT_URL}?customerName=${encodeURIComponent(name)}`;
+            const res = await fetch(url);
+            if (!res.ok) return false;
+            const result = await res.json();
+            if (result.result !== 'success') return false;
+            const records = Array.isArray(result.data) ? result.data : [result.data];
+            return records.some(r => r['손님 이름'] === name && r['주문 일자'] === orderDate);
+        } catch (e) {
+            console.error('verifyOrderSaved error:', e);
+            return false;
+        }
+    }
+
     async function sendDataToAppsScript(action, submitButton) {
         const isUpdate = action === 'update';
         submitButton.disabled = true;
@@ -867,7 +887,18 @@
 
         } catch (err) {
             console.error(err);
-            showMessage(`❌ ${isUpdate ? 'Update' : 'Save'} failed. Network or Apps Script error.`, 'bg-red-100 text-red-800');
+            // ✅ 응답을 못 읽었을 뿐 실제로는 저장됐을 수 있으므로 재확인
+            showMessage('🔄 Connection issue — checking if it actually saved...', 'bg-yellow-100 text-yellow-800');
+            const reallySaved = await verifyOrderSaved(data);
+            if (reallySaved) {
+                showMessage(
+                    isUpdate ? '✅ Updated in the sheet (confirmed).' : '✅ Saved to the sheet (confirmed).',
+                    'bg-green-100 text-green-800'
+                );
+                clearAllFormFields();
+            } else {
+                showMessage(`❌ ${isUpdate ? 'Update' : 'Save'} failed. Network or Apps Script error.`, 'bg-red-100 text-red-800');
+            }
         } finally {
             submitButton.disabled = false;
             submitButton.textContent = 'Save Order to Sheet';
