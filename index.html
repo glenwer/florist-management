@@ -1085,6 +1085,8 @@
                 <div class="name">${o['손님 이름'] || '(no name)'}</div>
                 <div class="meta">${o['상품 내용'] || ''}</div>
                 <div class="meta">${o['주문 출처'] === 'Online' ? '🌐 Online' : '📞 Phone'} &nbsp;|&nbsp; ${o['총액'] ? '$' + o['총액'] : ''}</div>
+                <div class="meta">📅 ${o['배달 일자'] || '-'}</div>
+                <div class="meta">📍 ${o['받는 사람 주소'] || '-'}</div>
             </div>
         `).join('');
         banner.classList.remove('hidden');
