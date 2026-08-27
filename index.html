@@ -283,6 +283,31 @@
         </div>
     </div>
 
+    <!-- ══════════════ 온라인 주문 배송 확인 이메일 모달 ══════════════ -->
+    <div id="deliveryEmailModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="deliveryEmailModalTitle">
+        <div class="modal-box">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="deliveryEmailModalTitle" class="text-base font-bold text-gray-800">Confirm Completed Delivery</h2>
+                <button onclick="cancelDeliveryEmailModal()" class="text-gray-400 hover:text-gray-700 text-xl leading-none">&times;</button>
+            </div>
+            <p class="text-xs text-gray-500 mb-3">Enter the recipient's email and the date/time the delivery was completed. A confirmation email (with our Google review link) will be sent automatically.</p>
+
+            <label class="block text-xs font-bold text-gray-600 mb-1">Email Address</label>
+            <input type="email" id="deliveryEmailInput" class="input-field mb-3" autocomplete="off" placeholder="recipient@example.com">
+
+            <label class="block text-xs font-bold text-gray-600 mb-1">Delivered On (Date & Time)</label>
+            <input type="datetime-local" id="deliveryDateTimeInput" class="input-field">
+
+            <p id="deliveryEmailError" class="hidden text-xs text-red-600 mt-2"></p>
+            <div class="flex gap-2 justify-end mt-4">
+                <button type="button" onclick="cancelDeliveryEmailModal()"
+                    class="text-sm px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition">Cancel</button>
+                <button type="button" onclick="submitDeliveryEmail()"
+                    class="text-sm px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition">Send</button>
+            </div>
+        </div>
+    </div>
+
     <div class="max-w-4xl mx-auto bg-white shadow-2xl rounded-xl p-6 sm:p-10">
 
         <!-- 타이틀 -->
@@ -657,6 +682,9 @@
     // 배경 클릭으로 모달 닫기
     searchModal.addEventListener('click', e => { if (e.target === searchModal) closeModal(); });
     cardPasswordModal.addEventListener('click', e => { if (e.target === cardPasswordModal) closeCardPasswordModal(); });
+    document.getElementById('deliveryEmailModal').addEventListener('click', e => {
+        if (e.target.id === 'deliveryEmailModal') cancelDeliveryEmailModal();
+    });
 
     // ── 검색 (부분 이름 포함, 다중 결과 지원) ──────────
     // ✅ 검색은 이름만 넘어가는 GET이라 민감 정보 노출 문제 없음 — 그대로 유지
@@ -1067,29 +1095,135 @@
 
     function dismissNewOrderAlert() {
         document.getElementById('newOrderAlert').classList.add('hidden');
+        currentAlertOrders = [];
     }
 
-    // ✅ 배너 바깥 아무 곳이나 클릭하면 자동으로 닫힘
-    document.addEventListener('click', function(e) {
-        const banner = document.getElementById('newOrderAlert');
-        if (!banner.classList.contains('hidden') && !banner.contains(e.target)) {
-            dismissNewOrderAlert();
-        }
-    });
+    // ✅ 배달 일자를 mm-dd-yyyy 형식으로 변환 (서버는 yyyy-MM-dd 형식으로 보냄)
+    function formatDateMMDDYYYY(dateStr) {
+        if (!dateStr) return '';
+        const parts = dateStr.toString().split('-');
+        if (parts.length !== 3) return dateStr;
+        const [y, m, d] = parts;
+        return `${m}-${d}-${y}`;
+    }
+
+    let currentAlertOrders = []; // 지금 배너에 표시 중인 주문 목록 (클릭으로 하나씩 제거됨)
 
     function showNewOrderAlert(orders) {
+        currentAlertOrders = orders.slice();
+        renderNewOrderAlertList();
+        document.getElementById('newOrderAlert').classList.remove('hidden');
+    }
+
+    function renderNewOrderAlertList() {
         const banner = document.getElementById('newOrderAlert');
         const list = document.getElementById('newOrderAlertList');
-        list.innerHTML = orders.map(o => `
-            <div class="new-order-item">
+
+        if (currentAlertOrders.length === 0) {
+            dismissNewOrderAlert();
+            return;
+        }
+
+        list.innerHTML = currentAlertOrders.map((o, i) => {
+            const isOnline = o['주문 출처'] === 'Online';
+            return `
+            <div class="new-order-item" style="cursor:pointer;" onclick="handleAlertItemClick(${i})">
                 <div class="name">${o['손님 이름'] || '(no name)'}</div>
                 <div class="meta">${o['상품 내용'] || ''}</div>
-                <div class="meta">${o['주문 출처'] === 'Online' ? '🌐 Online' : '📞 Phone'} &nbsp;|&nbsp; ${o['총액'] ? '$' + o['총액'] : ''}</div>
-                <div class="meta">📅 ${o['배달 일자'] || '-'}</div>
+                <div class="meta">${isOnline ? '🌐 Online' : '📞 Phone'} &nbsp;|&nbsp; ${o['총액'] ? '$' + o['총액'] : ''}</div>
+                <div class="meta">📅 ${formatDateMMDDYYYY(o['배달 일자']) || '-'}</div>
                 <div class="meta">📍 ${o['받는 사람 주소'] || '-'}</div>
+                <div class="meta" style="font-style:italic; color:#94a3b8;">${isOnline ? 'Click to send delivery confirmation email' : 'Click to dismiss'}</div>
             </div>
-        `).join('');
+        `;
+        }).join('');
         banner.classList.remove('hidden');
+    }
+
+    // ✅ Phone 주문 클릭 → 그냥 목록에서 제거 (해제)
+    // ✅ Online 주문 클릭 → 배송 확인 이메일 입력 모달 열기
+    function handleAlertItemClick(index) {
+        const order = currentAlertOrders[index];
+        if (!order) return;
+        if (order['주문 출처'] === 'Online') {
+            openDeliveryEmailModal(index);
+        } else {
+            removeAlertItem(index);
+        }
+    }
+
+    function removeAlertItem(index) {
+        currentAlertOrders.splice(index, 1);
+        renderNewOrderAlertList();
+    }
+
+    // ── 온라인 주문: 배송 확인 이메일 모달 ──────────────
+    let deliveryEmailOrderIndex = null;
+
+    function openDeliveryEmailModal(index) {
+        deliveryEmailOrderIndex = index;
+        document.getElementById('deliveryEmailInput').value = '';
+        // ✅ 배달 완료 직후 바로 쓰는 경우가 많으므로 현재 시각을 기본값으로 채워둠 (필요시 수정 가능)
+        const now = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        const localNow = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+        document.getElementById('deliveryDateTimeInput').value = localNow;
+        document.getElementById('deliveryEmailError').classList.add('hidden');
+        document.getElementById('deliveryEmailModal').classList.add('open');
+    }
+
+    // ✅ 취소를 누르면 입력 없이 그냥 해당 주문 항목만 목록에서 사라짐 (이메일 발송 안 함)
+    function cancelDeliveryEmailModal() {
+        document.getElementById('deliveryEmailModal').classList.remove('open');
+        if (deliveryEmailOrderIndex !== null) {
+            removeAlertItem(deliveryEmailOrderIndex);
+            deliveryEmailOrderIndex = null;
+        }
+    }
+
+    async function submitDeliveryEmail() {
+        const email = document.getElementById('deliveryEmailInput').value.trim();
+        const deliveryDateTime = document.getElementById('deliveryDateTimeInput').value;
+        const errorEl = document.getElementById('deliveryEmailError');
+        errorEl.classList.add('hidden');
+
+        if (!email || !deliveryDateTime) {
+            errorEl.textContent = 'Please enter both email and delivery date/time.';
+            errorEl.classList.remove('hidden');
+            return;
+        }
+
+        // datetime-local 값을 보기 좋은 문자열로 변환 (mm-dd-yyyy h:mm AM/PM)
+        const dt = new Date(deliveryDateTime);
+        const formatted = isNaN(dt.getTime()) ? deliveryDateTime :
+            `${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}-${dt.getFullYear()} ` +
+            dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+        try {
+            const response = await fetch(GOOGLE_SHEET_APPS_SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: 'sendDeliveryEmail', email: email, deliveryDateTime: formatted })
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const result = await response.json();
+
+            if (result.result === 'success') {
+                document.getElementById('deliveryEmailModal').classList.remove('open');
+                showMessage(`✅ Delivery confirmation sent to ${email}.`, 'bg-green-100 text-green-800');
+                if (deliveryEmailOrderIndex !== null) {
+                    removeAlertItem(deliveryEmailOrderIndex);
+                    deliveryEmailOrderIndex = null;
+                }
+            } else {
+                errorEl.textContent = result.message || 'Failed to send email.';
+                errorEl.classList.remove('hidden');
+            }
+        } catch (err) {
+            console.error(err);
+            errorEl.textContent = 'Failed to send email. Network or Apps Script error.';
+            errorEl.classList.remove('hidden');
+        }
     }
 
     async function pollNewOrders() {
