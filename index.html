@@ -1067,6 +1067,7 @@
     // 신규 주문 알림 (30초마다 서버 확인 — 주로 Teleflora 자동 임포트 감지용)
     // ══════════════════════════════════════════════════════════
     let lastKnownOrderTimestamp = ''; // 아직 기준 시각을 모름 (최초 1회 조회로 설정됨)
+    let isPollingNewOrders = false; // ✅ 이전 폴링이 끝나기 전에 다음 폴링이 겹쳐 실행되는 것 방지
 
     function requestNotificationPermission() {
         if ('Notification' in window && Notification.permission === 'default') {
@@ -1238,6 +1239,8 @@
     }
 
     async function pollNewOrders() {
+        if (isPollingNewOrders) return; // ✅ 이전 요청이 아직 진행 중이면 이번 폴링은 건너뜀
+        isPollingNewOrders = true;
         try {
             const url = `${GOOGLE_SHEET_APPS_SCRIPT_URL}?action=checkNewOrders&since=${encodeURIComponent(lastKnownOrderTimestamp)}`;
             const response = await fetch(url);
@@ -1264,6 +1267,8 @@
             if (result.latestTimestamp) lastKnownOrderTimestamp = result.latestTimestamp;
         } catch (err) {
             console.error('pollNewOrders error:', err);
+        } finally {
+            isPollingNewOrders = false; // ✅ 성공/실패/중간 return 관계없이 항상 플래그 해제
         }
     }
 
