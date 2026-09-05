@@ -298,6 +298,9 @@
             <label class="block text-xs font-bold text-gray-600 mb-1">Delivered On (Date & Time)</label>
             <input type="datetime-local" id="deliveryDateTimeInput" class="input-field">
 
+            <label class="block text-xs font-bold text-gray-600 mb-1 mt-3">Short Message (optional)</label>
+            <input type="text" id="deliveryMessageInput" class="input-field" placeholder="e.g. Thank you for your order!" maxlength="200">
+
             <p id="deliveryEmailError" class="hidden text-xs text-red-600 mt-2"></p>
             <div class="flex gap-2 justify-end mt-4">
                 <button type="button" onclick="cancelDeliveryEmailModal()"
@@ -1180,6 +1183,7 @@
         const pad = n => String(n).padStart(2, '0');
         const localNow = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
         document.getElementById('deliveryDateTimeInput').value = localNow;
+        document.getElementById('deliveryMessageInput').value = '';
         document.getElementById('deliveryEmailError').classList.add('hidden');
         document.getElementById('deliveryEmailModal').classList.add('open');
     }
@@ -1196,6 +1200,7 @@
     async function submitDeliveryEmail() {
         const email = document.getElementById('deliveryEmailInput').value.trim();
         const deliveryDateTime = document.getElementById('deliveryDateTimeInput').value;
+        const message = document.getElementById('deliveryMessageInput').value.trim();
         const errorEl = document.getElementById('deliveryEmailError');
         errorEl.classList.add('hidden');
 
@@ -1215,7 +1220,7 @@
             const response = await fetch(GOOGLE_SHEET_APPS_SCRIPT_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: 'sendDeliveryEmail', email: email, deliveryDateTime: formatted })
+                body: JSON.stringify({ action: 'sendDeliveryEmail', email: email, deliveryDateTime: formatted, message: message })
             });
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const result = await response.json();
